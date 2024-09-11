@@ -31,6 +31,7 @@ from .model import (
     ReplyResult,
     VersionInfo,
     FollowResult,
+    SignFillInfo,
     UploadResult,
     UserPostInfo,
     SystemNoticeMessage,
@@ -323,8 +324,8 @@ class Client:
     async def sign_now(self) -> SignInfo:
         return await self.get("sign", SignInfo)
 
-    async def sign_fill(self) -> SignInfo:
-        return await self.get("sign/fill", SignInfo)
+    async def sign_fill(self) -> SignFillInfo:
+        return await self.get("sign/fill", SignFillInfo)
 
     async def get_chat_list(self) -> list[ChatList]:
         return await self.get("chat/list", list[ChatList], data_from="list")
