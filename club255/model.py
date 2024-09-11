@@ -38,6 +38,11 @@ class SignInfo(BaseModel):
     msg: str
 
 
+class SignFillInfo(BaseModel):
+    code: int
+    msg: str
+
+
 class LoginInfo(BaseModel):
     # code=0登录成功
     code: int
@@ -450,6 +455,7 @@ __all__ = [
     "VideoInfo",
     "UserData",
     "SignInfo",
+    "SignFillInfo",
     "LoginInfo",
     "FollowResult",
     "ReplyResult",

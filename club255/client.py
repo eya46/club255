@@ -1,3 +1,4 @@
+from uuid import uuid1
 from typing import Any, Union, Optional
 from collections.abc import Callable
 
@@ -40,16 +41,18 @@ from .exception import ActionFailed
 
 class Client:
     def __init__(
-        self,
-        url: Union[str, URL],
-        account: str,
-        password: str,
-        token: Optional[str] = None,
-        headers: Optional[dict[str, str]] = None,
-        httpx_config: dict[str, Any] = None,
+            self,
+            url: Union[str, URL],
+            account: str,
+            password: str,
+            token: Optional[str] = None,
+            headers: Optional[dict[str, str]] = None,
+            httpx_config: dict[str, Any] = None,
     ):
         if headers is None:
             headers = {}
+        if headers.get("authorization") is None:
+            headers["authorization"] = str(uuid1())
         if isinstance(url, str):
             url = URL(url)
         if httpx_config is None:
@@ -99,12 +102,12 @@ class Client:
         return await self.call_api(api, method=data.pop("method") if data.get("method") else "POST", **data)
 
     async def post(
-        self,
-        api: str,
-        type_: type[T],
-        strict=True,
-        data_from: Union[str, Callable, None] = None,
-        **data: Any,
+            self,
+            api: str,
+            type_: type[T],
+            strict=False,
+            data_from: Union[str, Callable, None] = None,
+            **data: Any,
     ) -> T:
         res = await self.call_api_post(api, **data)
         if strict and res.get("code", 0) != 0:
@@ -114,12 +117,12 @@ class Client:
         )
 
     async def get(
-        self,
-        api: str,
-        type_: type[T],
-        strict: bool = True,
-        data_from: Union[str, Callable, None] = None,
-        **data: Any,
+            self,
+            api: str,
+            type_: type[T],
+            strict: bool = False,
+            data_from: Union[str, Callable, None] = None,
+            **data: Any,
     ) -> T:
         res = await self.call_api_get(api, **data)
         if strict and res.get("code", 0) != 0:
@@ -183,7 +186,7 @@ class Client:
         return await self.get(f"forward/get-video-info?bv={bv}", VideoInfo)
 
     async def get_post_list_brief(
-        self, *, page: int = 1, _order: int = 1, _filter: int = 0, page_size=20
+            self, *, page: int = 1, _order: int = 1, _filter: int = 0, page_size=20
     ) -> list[BasePost]:
         """
         获取帖子列表，无详细内容
@@ -252,23 +255,23 @@ class Client:
         return message
 
     async def send_post(
-        self,
-        url: HttpUrl,
-        self_uid: UID,
-        title: str,
-        message: str,
+            self,
+            url: HttpUrl,
+            self_uid: UID,
+            title: str,
+            message: str,
     ) -> PostResult:
         message = await self.dispose_msg(url, self_uid, message)
         return await self.post("post/hansering", PostResult, title=title, content=message)
 
     async def send_floor_reply(
-        self,
-        *,
-        message: str,
-        pid: PID,
-        fid: FID,
-        upload_url: HttpUrl,
-        self_uid: UID,
+            self,
+            *,
+            message: str,
+            pid: PID,
+            fid: FID,
+            upload_url: HttpUrl,
+            self_uid: UID,
     ) -> ReplyResult:
         message = await self.dispose_msg(self_uid=self_uid, message=message, url=upload_url)
         return await self.post(
@@ -278,13 +281,13 @@ class Client:
         )
 
     async def send_post_reply(
-        self,
-        *,
-        upload_url: HttpUrl,
-        self_uid: UID,
-        message: str,
-        pid: PID,
-        author: UID,
+            self,
+            *,
+            upload_url: HttpUrl,
+            self_uid: UID,
+            message: str,
+            pid: PID,
+            author: UID,
     ) -> ReplyResult:
         message = await self.dispose_msg(self_uid=self_uid, message=message, url=upload_url)
         return await self.post(
@@ -319,6 +322,9 @@ class Client:
 
     async def sign_now(self) -> SignInfo:
         return await self.get("sign", SignInfo)
+
+    async def sign_fill(self) -> SignInfo:
+        return await self.get("sign/fill", SignInfo)
 
     async def get_chat_list(self) -> list[ChatList]:
         return await self.get("chat/list", list[ChatList], data_from="list")
@@ -408,12 +414,12 @@ class Client:
         return await self.post(f"user/follow/{uid}", FollowResult, uid=int(uid))
 
     async def edit_post(
-        self,
-        url: HttpUrl,
-        self_uid: UID,
-        pid: PID,
-        title: str,
-        message: str,
+            self,
+            url: HttpUrl,
+            self_uid: UID,
+            pid: PID,
+            title: str,
+            message: str,
     ) -> Response:
         """
         修改帖子
